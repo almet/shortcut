@@ -1,0 +1,6 @@
+#! /bin/bash
+# source this file to have the alias available !
+to(){
+    s=$(ruby main.rb $@)
+    if [[ $s = "cd "* ]] ; then cd "${s#cd }"; else echo "$s"; fi
+}

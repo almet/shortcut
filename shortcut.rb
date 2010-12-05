@@ -6,6 +6,7 @@ class BookmarkExists < ShortcutError; end
 class BookmarksDoesNotExists < ShortcutError; end
 class NotADirectory < ShortcutError; end
 
+# backends
 class FakeBackend
     def read
         # load file
@@ -17,51 +18,61 @@ class FakeBackend
     end
 end
 
-# backends
 class SqliteBackend
+
     def initialize(file=nil)
         file ||= "shortcuts.db"
         @file = file
-        @db = SQLite3::Database.new(file)
-        @map = {}
+        @db = SQLite3::Database.new(@file)
+        if not File.exists?(@file)
+            self.create_tables
+        end
+        @hash = {}
     end
+
+    def read
+        @db.execute("SELECT name, path FROM shortcuts;").each do |name, path|
+            @hash[name] = path
+        end
+        return @hash.clone
+    end
+    
+    def write(bookmarks)
+        # check the differences between the old and the new hash and
+        # insert/delete when needed. No modification is allowed for now, just
+        # add/delete
+        bookmarks.each do |key, value|
+            if @hash.has_key? key and @hash[key] != value
+                self.update(key, value)
+            elsif not @hash.has_key? key
+                self.create(key, value)
+            end
+        end
+
+        @hash.each do |key, value|
+            if not bookmarks.has_key? key
+                self.delete(key)
+            end
+        end
+    end
+
+    protected # all methods folowing that will be protected
 
     def create_tables()
         @db.execute("DROP TABLE IF EXISTS shortcuts;")
         @db.execute("CREATE TABLE shortcuts (name varchar(100), path text);")
     end
 
-    def read
-        if not(File.exists?(@file) && File.directory?(@file))
-            self.create_tables()
-        end
-        @db.execute("SELECT * FROM shortcuts") do |row| 
-            @map[key] = value
-        end
-        return @map
-    end
-    
-    def add(name, path)
-        @db.execute("INSERT INTO shortcuts VALUES (\"#{name}\", \"#{value}\");")
+    def create(name, path)
+        @db.execute("INSERT INTO shortcuts VALUES (\"#{name}\", \"#{path}\");")
     end
 
-    def remove(name)
+    def delete(name)
         @db.execute("DELETE FROM shortcuts WHERE name = \"#{name}\";")
     end
 
     def update(name, path)
-        @db.execute("UPDATE shortcuts SET path=\"#{path}\" where name=\"#{name}\"";)
-    end
-
-    def write(bookmarks)
-        # check the differences between the old and the new map and
-        # insert/delete when needed. No modification is allowed for now, just
-        # add/delete
-        bookmarks.each do |key, value|
-            if @map.has_key? key and 
-        
-        end
-        puts "writing files"
+        @db.execute("UPDATE shortcuts SET path=\"#{path}\" where name=\"#{name}\";")
     end
 end
 
@@ -83,9 +94,6 @@ class Shortcut
            raise NotADirectory, path
         end
 
-        if overwrite
-            puts "overwrite"
-        end
         if @bookmarks.has_key? name and not overwrite
             raise BookmarkExists, @bookmarks[name]
         end
