@@ -42,3 +42,15 @@ And remove some if you want to::
 
     $ shortcut --remove name
     $ shortcut --clear
+
+Notes
+=====
+
+This software have been made to learn ruby. So it's far from perfect and not
+really made to be usable. I mean by that that here I'm using a sqlite database
+to store bookmarks. I found that's a bit overkill. Still, I'd learned how to
+query sqlite databases ! So the point is not to make something really useful,
+but to learn how those are working :)
+
+Don't hesitate to provide me any feedback if you want to, I'll be happy to
+learn what I've made wrong.
