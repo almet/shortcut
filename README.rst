@@ -4,44 +4,78 @@ shortcut
 `Shortcut` is a tiny utility to manage bookmarks for your shell.
 
 It provides a simple command line to do all you want to do with your
-bookmarks::
+bookmarks: `to`.
 
 Install shorcut
 ===============
+
+From gems
+---------
 
 You can rely on the `gem` systems to install shorcut::
 
     $ gem install shortcut
 
-And that's it !
+Then, you will need to source a special file in you .bashrc, .zshrc or
+whatever, that will be read at the beginning of your shell session.
+
+From sources
+------------
+
+You can also choose to install shortcut from sources::
+
+    $ git clone https://ametaireau@github.com/ametaireau/shortcut.git
+    $ ???
 
 How to use shorcut
 ==================
 
+Shortcut is really simple. Say you want to go to a particular path, for which
+you have already created an shortcut::
+
+    $ to foobar
+    sorry, unable to get a shortcut for 'foobar'
+
+Obviously, that's because you need to create the bookmark::
+
+    $ to --create foobar
+
 `--create` will create or update a bookmark with the name `name`, pointing to 
-the current directory.::
-
-    $ shortcut --create name
-
+the current directory.  
 You can also specify the path you want the bookmarks points to::
 
-    $ shortcut --create name /path/to/your/folder
+    $ to --create foobaz /path/to/your/folder
+    added an alias foobaz to /path/to/your/folder
 
-`shortcut name` will move to the path indicated by `name`::
+If you want to overwrite an already existing bookmark, you can use the
+`--overwrite` option::
 
-    $ shortcut name
-    $ pwd
-    /path/to/your/folder
+    $ to --create foobar /path/to/your/folder --overwrite
+    added an alias foobar to /path/to/your/folder
 
 You can also list all the existing bookmarks::
 
-    $ shortcut --list
-    name → /path/to/your/folder
+    $ to --list
+        
+        foobar     /path/to/your/folder
+        foobaz     /path/to/your/folder
 
 And remove some if you want to::
 
-    $ shortcut --remove name
-    $ shortcut --clear
+    $ to --remove foobar
+    ok
+
+By default, the backend is a SQLite database, but you can use a Redis server if
+you want (once again, it was just for the sake of implementing a redis backend,
+that's doesnt sound very useful :))::
+
+    $ to --redis 
+
+Dependencies
+============
+
+`Shortcut` have dependencies to `Redis` and `SQLite3`, depending on the backend
+you want to use. `Redis` also need the `SystemTimer` gem to be installed.
 
 Notes
 =====

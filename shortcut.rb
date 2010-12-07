@@ -1,80 +1,10 @@
-require 'sqlite3'
+require 'backends.rb'
 
 # define some exceptions to be used
 class ShortcutError < StandardError; end # the base exception class for this lib
 class ShortcutExists < ShortcutError; end
 class ShortcutsDoesNotExists < ShortcutError; end
 class NotADirectory < ShortcutError; end
-
-# backends
-class FakeBackend
-    def read
-        # load file
-        return {"dev" => "/home/alexis/dev/"}
-    end
-
-    def write(shortcuts)
-        puts "writing files"
-    end
-end
-
-class SqliteBackend
-
-    def initialize(file=nil)
-        file ||= "shortcuts.db"
-        @file = file
-        @db = SQLite3::Database.new(@file)
-        if not File.exists?(@file)
-            self.create_tables
-        end
-        @hash = {}
-    end
-
-    def read
-        @db.execute("SELECT name, path FROM shortcuts;").each do |name, path|
-            @hash[name] = path
-        end
-        return @hash.clone
-    end
-    
-    def write(shortcuts)
-        # check the differences between the old and the new hash and
-        # insert/delete when needed. No modification is allowed for now, just
-        # add/delete
-        shortcuts.each do |key, value|
-            if @hash.has_key? key and @hash[key] != value
-                self.update(key, value)
-            elsif not @hash.has_key? key
-                self.create(key, value)
-            end
-        end
-
-        @hash.each do |key, value|
-            if not shortcuts.has_key? key
-                self.delete(key)
-            end
-        end
-    end
-
-    protected # all methods folowing that will be protected
-
-    def create_tables()
-        @db.execute("DROP TABLE IF EXISTS shortcuts;")
-        @db.execute("CREATE TABLE shortcuts (name varchar(100), path text);")
-    end
-
-    def create(name, path)
-        @db.execute("INSERT INTO shortcuts VALUES (\"#{name}\", \"#{path}\");")
-    end
-
-    def delete(name)
-        @db.execute("DELETE FROM shortcuts WHERE name = \"#{name}\";")
-    end
-
-    def update(name, path)
-        @db.execute("UPDATE shortcuts SET path=\"#{path}\" where name=\"#{name}\";")
-    end
-end
 
 class Shortcut
     def initialize(backend=nil)
@@ -118,6 +48,6 @@ class Shortcut
     end
 
     def persist
-        @backend.write(@shortcuts)         
+        @backend.write(@shortcuts)
     end
 end

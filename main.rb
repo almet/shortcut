@@ -18,6 +18,7 @@ def parse_opts
     # Default parameter values
     action = 'cd'
     overwrite = false
+    backend = nil
 
     opts = OptionParser.new do |opts|
         opts.banner = "Usage: to [options]"
@@ -41,6 +42,11 @@ def parse_opts
             overwrite = true
         end
 
+        opts.on("--redis", "Use the provided redis backend") do
+            require 'backends.rb'
+            backend = RedisBackend.new
+        end
+
         opts.separator ""
         opts.separator "Common action"
 
@@ -49,7 +55,7 @@ def parse_opts
             exit
         end
     end.parse! # this one is required to actually parse the options.
-    return action, overwrite
+    return action, overwrite, backend
 end
 
 # because it's not possible tan change the directory of a parent process, I'm
