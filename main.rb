@@ -25,15 +25,15 @@ def parse_opts
         opts.separator ""
         opts.separator "Specific action"
 
-        opts.on("-c", "--create", "Create the given bookmark") do |create|
+        opts.on("-c", "--create", "Create the given shortcut") do |create|
             action = "create"
         end
 
-        opts.on("-d", "--delete", "Delete the given bookmark") do |delete|
+        opts.on("-d", "--delete", "Delete the given shortcut") do |delete|
             action = "delete"
         end
 
-        opts.on("-l", "--list", "List all the existing bookmarks") do |list|
+        opts.on("-l", "--list", "List all the existing shortcuts") do |list|
             action = "list"
         end
 
@@ -76,8 +76,8 @@ def call_shortcut(action, overwrite, args)
             begin
                 path = sc.get(args[0])
                 puts "cd #{path}"
-            rescue BookmarksDoesNotExists => e
-                puts "sorry, unable to get a bookmark for '#{e.message}'"
+            rescue ShortcutsDoesNotExists => e
+                puts "sorry, unable to get a shortcut for '#{e.message}'"
             end
         end
 
@@ -89,7 +89,7 @@ def call_shortcut(action, overwrite, args)
                 name, path = args[0], args[1]
                 path = sc.create(name, path, overwrite)
                 puts "added an alias #{name} to #{path}"
-            rescue BookmarkExists => e
+            rescue ShortcutExists => e
                 puts "this shortcut already points to #{e.message}"
             rescue NotADirectory => e
                 puts "#{e.message} is not a directory"
@@ -103,8 +103,8 @@ def call_shortcut(action, overwrite, args)
             begin
                 sc.delete(args[0])
                 puts "ok"
-            rescue BookmarksDoesNotExists => e
-                puts "sorry, unable to find a bookmark for '#{e.message}'"
+            rescue ShortcutsDoesNotExists => e
+                puts "sorry, unable to find a shortcut for '#{e.message}'"
             end
         end
     end

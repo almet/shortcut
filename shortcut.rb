@@ -2,8 +2,8 @@ require 'sqlite3'
 
 # define some exceptions to be used
 class ShortcutError < StandardError; end # the base exception class for this lib
-class BookmarkExists < ShortcutError; end
-class BookmarksDoesNotExists < ShortcutError; end
+class ShortcutExists < ShortcutError; end
+class ShortcutsDoesNotExists < ShortcutError; end
 class NotADirectory < ShortcutError; end
 
 # backends
@@ -13,7 +13,7 @@ class FakeBackend
         return {"dev" => "/home/alexis/dev/"}
     end
 
-    def write(bookmarks)
+    def write(shortcuts)
         puts "writing files"
     end
 end
@@ -37,11 +37,11 @@ class SqliteBackend
         return @hash.clone
     end
     
-    def write(bookmarks)
+    def write(shortcuts)
         # check the differences between the old and the new hash and
         # insert/delete when needed. No modification is allowed for now, just
         # add/delete
-        bookmarks.each do |key, value|
+        shortcuts.each do |key, value|
             if @hash.has_key? key and @hash[key] != value
                 self.update(key, value)
             elsif not @hash.has_key? key
@@ -50,7 +50,7 @@ class SqliteBackend
         end
 
         @hash.each do |key, value|
-            if not bookmarks.has_key? key
+            if not shortcuts.has_key? key
                 self.delete(key)
             end
         end
@@ -80,7 +80,7 @@ class Shortcut
     def initialize(backend=nil)
         backend ||= SqliteBackend.new
         @backend = backend
-        @bookmarks = @backend.read()
+        @shortcuts = @backend.read()
 
         # in case the gc collects
         ObjectSpace.define_finalizer(self, proc {self.persists})
@@ -94,30 +94,30 @@ class Shortcut
            raise NotADirectory, path
         end
 
-        if @bookmarks.has_key? name and not overwrite
-            raise BookmarkExists, @bookmarks[name]
+        if @shortcuts.has_key? name and not overwrite
+            raise ShortcutExists, @shortcuts[name]
         end
-        @bookmarks[name] = path
+        @shortcuts[name] = path
         return path
     end
 
     def delete(name)
-        return @bookmarks.delete(name)
+        return @shortcuts.delete(name)
     end
 
     def list()
-        return @bookmarks.freeze
+        return @shortcuts.freeze
     end
 
     def get(name)
-        if @bookmarks.has_key? name
-            return @bookmarks[name]
+        if @shortcuts.has_key? name
+            return @shortcuts[name]
         else
-            raise BookmarksDoesNotExists, name
+            raise ShortcutsDoesNotExists, name
         end
     end
 
     def persist
-        @backend.write(@bookmarks)         
+        @backend.write(@shortcuts)         
     end
 end
