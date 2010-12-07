@@ -11,9 +11,6 @@ class Shortcut
         backend ||= SqliteBackend.new
         @backend = backend
         @shortcuts = @backend.read()
-
-        # in case the gc collects
-        ObjectSpace.define_finalizer(self, proc {self.persists})
     end
 
     def create(name, path=nil, overwrite=false)
