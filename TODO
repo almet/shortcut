@@ -1,0 +1,4 @@
+* packaging
+* other backends (mongodb ?, redis?) 
+* detect the right way if the database exists
+* look for config folders for the db.
