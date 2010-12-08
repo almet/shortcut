@@ -44,7 +44,17 @@ class Shortcut
         end
     end
 
+    def has?(name)
+        return @shortcuts.has_key? name
+    end
+
     def persist
         @backend.write(@shortcuts)
+    end
+
+    def each
+        @backend.each do |key, value|
+            yield key, value
+        end
     end
 end
